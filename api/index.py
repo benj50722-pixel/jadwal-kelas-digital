@@ -35,6 +35,10 @@ def get_or_create():
     sb.table("class_schedule").insert({"id": 1, **d}).execute()
     return d
 
+@app.get("/")
+@app.get("/api")
+@app.get("/schedule")
+@app.get("/api/index.py")
 @app.get("/api/schedule")
 def get_schedule():
     try:
@@ -51,6 +55,10 @@ def check_admin(password: str | None):
     if password != expected:
         raise HTTPException(status_code=401, detail="Kata sandi admin salah.")
 
+@app.put("/")
+@app.put("/api")
+@app.put("/schedule")
+@app.put("/api/index.py")
 @app.put("/api/schedule")
 def save_schedule(payload: dict, x_admin_password: str | None = Header(default=None)):
     check_admin(x_admin_password)
