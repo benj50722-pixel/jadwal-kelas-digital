@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jadwal Kelas Digital</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;800&family=Rajdhani:wght@400;500;600;700&display=swap');
+:root{--bg:#071426;--panel:#0a1e34;--line:#1b4e78;--cyan:#48c6ff;--text:#f4f9ff;--muted:#9dbbd5}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif}
+main{max-width:1150px;margin:auto;padding:22px}
+.hero{padding:28px 30px;border:1px solid #1d5d94;border-radius:22px;background:radial-gradient(circle at 85% 10%,#155e9e 0,#0b2b4b 32%,#091a30 75%);margin-bottom:18px}
+.tag,.eyebrow,.period-label{font-family:Orbitron,sans-serif;color:var(--cyan);letter-spacing:2px;font-size:11px}
+h1{font:800 clamp(25px,4vw,42px) Orbitron,sans-serif;margin:12px 0} .sub{font-size:18px;color:#bddcf4}
+nav{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}button,select,input{font:600 16px 'Rajdhani',sans-serif;border-radius:10px;border:1px solid #28577e;padding:10px 12px;background:#0b2037;color:white}
+button{cursor:pointer}button.primary{background:linear-gradient(100deg,#0879ce,#2354bd);border-color:#399fe8}
+button.active{background:#155e9e;border-color:#48c6ff}
+.panel{border:1px solid var(--line);border-radius:18px;background:var(--panel);padding:20px;margin-top:12px}
+.hidden{display:none}.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:12px 0}
+.schedule-head{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:18px}.schedule-head h2{font:700 26px Orbitron,sans-serif;margin:8px 0}.muted{color:var(--muted)}
+.period-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
+.period{display:flex;align-items:center;gap:13px;padding:13px;border-radius:13px;border:1px solid #1b4264;background:linear-gradient(110deg,#102b46,#0c2037);min-height:65px}
+.no{display:flex;align-items:center;justify-content:center;width:43px;height:43px;flex-shrink:0;border-radius:12px;background:linear-gradient(135deg,#138ce5,#2353b9);font:700 15px Orbitron,sans-serif}
+.period-label{letter-spacing:.5px;margin-bottom:4px;font-size:10px}.subject{font-size:19px;font-weight:700;overflow-wrap:anywhere}
+.grid-edit{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.field{display:flex;flex-direction:column;gap:5px}.field label{color:#bddcf4}.field select,.field input{width:100%}
+.status{padding:10px 0;color:#8eeaff}.danger{color:#ffb9b9}.footer{color:#7296b6;text-align:center;padding:22px}
+@media(max-width:600px){main{padding:12px}.hero{padding:22px 18px}.panel{padding:14px}.schedule-head{align-items:flex-start;flex-direction:column}}
+</style></head>
+<body><main>
+<header class="hero"><div class="tag">✦ SMART CLASSROOM / DIGITAL AGENDA</div><h1>JADWAL KELAS<br>DIGITAL</h1><div class="sub">Atur harimu. Fokus pada tujuan. Raih prestasi.</div></header>
+<nav><button class="active" data-tab="today">✦ Jadwal Hari Ini</button><button data-tab="edit">⚙ Atur Jadwal</button><button data-tab="subjects">📚 Mata Pelajaran</button></nav>
+<section id="today" class="panel"><div class="schedule-head"><div><div class="eyebrow">AGENDA AKADEMIK</div><h2 id="todayTitle">Jadwal Hari Ini</h2><p class="muted">Jadwal otomatis sesuai hari saat ini.</p></div><select id="viewDay" aria-label="Pilih hari"></select></div><div id="scheduleList" class="period-list">Memuat jadwal...</div></section>
+<section id="edit" class="panel hidden"><h2>Atur 12 jam pelajaran</h2><p class="muted">Pilih hari, ubah mata pelajaran, lalu simpan.</p><div class="toolbar"><label for="editDay">Hari:</label><select id="editDay"></select></div><div id="editFields" class="grid-edit"></div><div class="toolbar"><button class="primary" id="saveSchedule">💾 Simpan Jadwal</button><input id="adminPassword" type="password" placeholder="Kata sandi admin" autocomplete="current-password"></div><div id="editStatus" class="status" role="status"></div></section>
+<section id="subjects" class="panel hidden"><h2>Daftar 13 mata pelajaran</h2><p class="muted">Nama mata pelajaran yang diganti akan diperbarui pada jadwal yang memakai nama lama.</p><div id="subjectFields" class="grid-edit"></div><div class="toolbar"><button class="primary" id="saveSubjects">💾 Simpan Nama Mata Pelajaran</button><input id="adminPassword2" type="password" placeholder="Kata sandi admin" autocomplete="current-password"></div><div id="subjectStatus" class="status" role="status"></div></section>
+<div class="footer">✦ JADWAL KELAS DIGITAL · Data disimpan di Supabase</div>
+</main>
+<script>
+const DAYS=["Senin","Selasa","Rabu","Kamis","Jumat"];
+const DEFAULT=["Matematika","Bahasa Indonesia","Bahasa Inggris","IPA","IPS","Pendidikan Pancasila","PJOK","Informatika","Seni Budaya","Agama","Prakarya","Bahasa Daerah","Projek"];
+let data={subjects:[...DEFAULT],schedule:{}};
+const $=id=>document.getElementById(id);
+const todayName=()=>{const d=new Date().getDay();return d===0||d===6?null:DAYS[d-1]};
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function seed(){DAYS.forEach((d,idx)=>data.schedule[d]=Array.from({length:12},(_,j)=>DEFAULT[(idx*3+j)%DEFAULT.length]));}
+function fillDaySelectors(){["viewDay","editDay"].forEach(id=>{$(id).innerHTML=DAYS.map(d=>`<option>${d}</option>`).join("");});}
+function renderDay(day){$("todayTitle").textContent=day||"Hari ini tidak ada jadwal sekolah";if(!day){$("scheduleList").innerHTML='<p class="muted">Selamat beristirahat! Pilih hari sekolah untuk melihat jadwal.</p>';return;}
+$("scheduleList").innerHTML=(data.schedule[day]||[]).map((s,i)=>`<div class="period"><div class="no">${String(i+1).padStart(2,"0")}</div><div><div class="period-label">JAM PELAJARAN ${String(i+1).padStart(2,"0")}</div><div class="subject">${escapeHtml(s)}</div></div></div>`).join("");}
+function renderEditor(){const day=$("editDay").value;const vals=data.schedule[day]||Array(12).fill(data.subjects[0]);$("editFields").innerHTML=vals.map((v,i)=>`<div class="field"><label for="period${i}">${i+1}. Jam Pelajaran ${String(i+1).padStart(2,"0")}</label><select id="period${i}">${data.subjects.map(s=>`<option ${s===v?"selected":""}>${escapeHtml(s)}</option>`).join("")}</select></div>`).join("");}
+function renderSubjects(){ $("subjectFields").innerHTML=data.subjects.map((s,i)=>`<div class="field"><label for="subject${i}">Mata Pelajaran ${i+1}</label><input id="subject${i}" maxlength="100" value="${escapeHtml(s)}"></div>`).join("");}
+function refresh(){fillDaySelectors();const t=todayName();$("viewDay").value=t||"Senin";renderDay(t);$("editDay").value="Senin";renderEditor();renderSubjects();}
+async function load(){try{const r=await fetch("/api/schedule");if(!r.ok)throw new Error((await r.json()).detail||"API tidak tersedia");data=await r.json();refresh();}catch(e){seed();data.subjects=[...DEFAULT];refresh();$("scheduleList").innerHTML='<p class="danger">Tidak dapat memuat database. Periksa pengaturan Supabase dan deploy Vercel. '+escapeHtml(e.message)+'</p>';}}
+async function save(password,statusEl){if(!password){statusEl.textContent="Masukkan kata sandi admin terlebih dahulu.";statusEl.className="status danger";return false;}try{const r=await fetch("/api/schedule",{method:"PUT",headers:{"Content-Type":"application/json","X-Admin-Password":password},body:JSON.stringify(data)});const body=await r.json();if(!r.ok)throw new Error(body.detail||"Gagal menyimpan");statusEl.textContent=body.message||"Berhasil disimpan.";statusEl.className="status";return true;}catch(e){statusEl.textContent=e.message;statusEl.className="status danger";return false;}}
+document.querySelectorAll("nav button").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll("nav button").forEach(x=>x.classList.toggle("active",x===b));["today","edit","subjects"].forEach(id=>$(id).classList.toggle("hidden",id!==b.dataset.tab));}));
+$("viewDay").addEventListener("change",e=>renderDay(e.target.value));$("editDay").addEventListener("change",renderEditor);
+$("saveSchedule").addEventListener("click",async()=>{const day=$("editDay").value;data.schedule[day]=Array.from({length:12},(_,i)=>$("period"+i).value);if(await save($("adminPassword").value,$("editStatus"))){renderDay($("viewDay").value);}});
+$("saveSubjects").addEventListener("click",async()=>{const old=[...data.subjects];const names=Array.from({length:13},(_,i)=>$("subject"+i).value.trim()||`Mata Pelajaran ${i+1}`);if(new Set(names).size!==13){$("subjectStatus").textContent="Setiap nama mata pelajaran harus unik."; $("subjectStatus").className="status danger";return;}data.schedule=Object.fromEntries(DAYS.map(day=>[day,data.schedule[day].map(v=>{const i=old.indexOf(v);return i>=0?names[i]:names[0];})]));data.subjects=names;if(await save($("adminPassword2").value,$("subjectStatus"))){refresh();}});
+load();
+</script></body></html>
